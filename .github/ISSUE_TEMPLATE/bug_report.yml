@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in farsyn itself is broken — a crash, a wrong exit code, a command that doesn't do what it documents.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If this is about a **verdict farsyn produced being wrong** (a false
+        pass/fail, or a wrong geo match), use the
+        [False verdict](?template=false_verdict.yml) template instead — it
+        asks for the run id and evidence manifest a wrong-verdict report
+        actually needs.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Command and steps to reproduce
+      render: shell
+      placeholder: |
+        farsyn profile list --json
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output (human-readable and/or --json)
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: farsyn / @farsyn/engine / @farsyn/mcp version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS and Node version
+      placeholder: macOS 15, Node 22.16
+    validations:
+      required: true
+
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Browser engine, if relevant
+      options:
+        - agent-browser (default)
+        - playwright
+        - not applicable

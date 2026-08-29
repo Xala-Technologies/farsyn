@@ -1,0 +1,80 @@
+/**
+ * A healthy fake browser, shared by the run-layer tests. Not a test file — it
+ * has no `.test.ts` suffix, so vitest neither collects nor covers it.
+ */
+import type { BrowserResult, BrowserRuntime } from "../../browser/types.js";
+
+const meta = { stdout: "", stderr: "", durationMs: 1, command: "c" };
+
+export const ok = <T,>(data: T): BrowserResult<T> => ({ ok: true, data, ...meta });
+
+export const bad = <T,>(kind = "exit"): BrowserResult<T> => ({
+  ok: false,
+  failure: { kind: kind as never, detail: "nope", exitCode: 1, signal: null },
+  ...meta,
+});
+
+export const IPINFO_OSLO = JSON.stringify({
+  ip: "203.0.113.42",
+  city: "Lysaker",
+  region: "Akershus",
+  country: "NO",
+  org: "AS64500 EXAMPLE TELECOM AS",
+  timezone: "Europe/Oslo",
+});
+
+export const BROWSER_ENV_OSLO = JSON.stringify({
+  language: "nb-NO",
+  languages: ["nb-NO", "nb"],
+  timezone: "Europe/Oslo",
+  // The user agent `oslo-mobile.json` DECLARES, not a headless default.
+  //
+  // It was `HeadlessChrome/151` until the mobile profiles gained a real identity (gaps C-8), at
+  // which point every run through this fake carried a device MISMATCH — so `trustworthy` was
+  // false in every test in the suite, and the arm where a run is fully verified became
+  // unreachable. A fake that disagrees with the profiles it stands in for makes every test a
+  // test of the disagreement.
+  userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36",
+  viewport: { width: 390, height: 844 },
+  geolocation: { latitude: 59.9139, longitude: 10.7522 },
+});
+
+export function fakeRuntime(over: Partial<BrowserRuntime> = {}): BrowserRuntime {
+  return {
+    sessionId: "run_1",
+    open: (url) => Promise.resolve(ok({ url, title: "T", targetId: "t", launchHash: "h", browserLaunched: false })),
+    reload: () => Promise.resolve(ok({ url: "u", title: "T", targetId: "t", launchHash: "h", browserLaunched: false })),
+    getText: () => Promise.resolve(ok(IPINFO_OSLO)),
+    getTitle: () => Promise.resolve(ok("Acme")),
+    getUrl: () => Promise.resolve(ok("https://example.com/")),
+    count: () => Promise.resolve(ok(9)),
+    isVisible: () => Promise.resolve(ok(true)),
+    visibleCount: () => Promise.resolve(ok(1)),
+    snapshot: () => Promise.resolve(ok("- heading")),
+    evaluate: <T,>() => Promise.resolve(ok(BROWSER_ENV_OSLO as unknown as T)),
+    click: () => Promise.resolve(ok(null)),
+    fill: () => Promise.resolve(ok(null)),
+    press: () => Promise.resolve(ok(null)),
+    select: () => Promise.resolve(ok(null)),
+    check: () => Promise.resolve(ok(null)),
+    scroll: () => Promise.resolve(ok(null)),
+    pinch: () => Promise.resolve(ok(null)),
+    waitFor: () => Promise.resolve(ok(null)),
+    setViewport: () => Promise.resolve(ok(null)),
+    setDevice: () => Promise.resolve(ok(null)),
+    setGeo: () => Promise.resolve(ok(null)),
+    setHeaders: () => Promise.resolve(ok(null)),
+    screenshot: () => Promise.resolve(ok(null)),
+    console: () => Promise.resolve(ok([])),
+    errors: () => Promise.resolve(ok([])),
+    networkRequests: () => Promise.resolve(ok([])),
+    harStart: () => Promise.resolve(ok(null)),
+    harStop: () => Promise.resolve(ok(null)),
+    traceStart: () => Promise.resolve(ok(null)),
+    traceStop: () => Promise.resolve(ok(null)),
+    vitals: () => Promise.resolve(ok({ lcp: 900, cls: 0, ttfb: 10, fcp: 40, inp: null })),
+    a11y: () => Promise.resolve(ok([])),
+    close: () => Promise.resolve(ok(null)),
+    ...over,
+  } as BrowserRuntime;
+}

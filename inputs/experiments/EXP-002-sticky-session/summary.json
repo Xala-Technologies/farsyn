@@ -1,0 +1,25 @@
+{
+  "id": "EXP-002-sticky-session",
+  "hypothesis": "A single journey keeps one coherent network identity for its whole duration.",
+  "samples": 1,
+  "succeeded": 1,
+  "failed": 0,
+  "startedAt": "2026-08-13T07:36:09.462Z",
+  "finishedAt": "2026-08-13T07:46:10.660Z",
+  "metrics": [
+    {
+      "key": "ip-stability",
+      "description": "Samples whose IP matched the session's first reading",
+      "target": 95,
+      "unit": "percent",
+      "direction": "min",
+      "value": 100,
+      "verdict": "pass",
+      "reason": "100.0% vs ≥ 95%"
+    }
+  ],
+  "verdict": "pass",
+  "notes": [
+    "Each sample held ONE session for 10min across 5 reads (one every 2.5min). That covers the 10min window the PRD asks for. The reads are spaced, not continuous, so a rotation that healed between two of them is still invisible."
+  ]
+}

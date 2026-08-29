@@ -1,0 +1,80 @@
+name: Release
+
+# Runs on every push to main. changesets/action itself decides what to do:
+# open/update a "Version Packages" PR if unreleased changesets exist, or
+# (when that PR is what just got merged) bump versions, tag, and publish.
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # `secrets` cannot be read inside a step's `if:` at all — GitHub Actions
+    # rejects the whole workflow file at parse time with "Unrecognized
+    # named-value: 'secrets'" rather than failing the run. Job-level `env:`
+    # can read it, so the presence check is promoted here and the step below
+    # branches on the env var instead.
+    env:
+      HAS_NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
+    permissions:
+      # changesets/action pushes the version PR and creates the git tag.
+      contents: write
+      pull-requests: write
+      # npm provenance — ties the published tarball back to this exact
+      # workflow run and commit.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # The same gates as ci.yml, run again here rather than assumed from a
+      # prior green run: a merge to main can combine two individually-green
+      # PRs into a red tree, and this is the job with publish credentials.
+      - name: Lint
+        run: pnpm lint
+      - name: Boundaries
+        run: pnpm boundaries
+      - name: Test with coverage
+        run: pnpm test:coverage
+      - name: MCP tests
+        run: pnpm test:mcp
+
+      # Dormant until NPM_TOKEN exists: without it, npm's CLI falls back to
+      # attempting OIDC trusted publishing (unconfigured on the npm side for
+      # a package that has never been published) and fails ENEEDAUTH rather
+      # than doing nothing. A red Release job on every push to main — before
+      # anyone decided this repo should publish yet — is worse than a step
+      # that visibly does not run.
+      - name: Create release PR or publish
+        if: ${{ env.HAS_NPM_TOKEN == 'true' }}
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

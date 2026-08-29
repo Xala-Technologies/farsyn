@@ -1,0 +1,30 @@
+{
+  "$comment": "Ostfold, close to the Swedish border. Useful for catching a geo-redirect that fires on proximity rather than country.",
+  "id": "sarpsborg-mobile",
+  "label": "Sarpsborg, mobile",
+  "market": {
+    "id": "sarpsborg",
+    "country": "NO",
+    "city": "Sarpsborg",
+    "language": "nb-NO",
+    "timezone": "Europe/Oslo",
+    "currency": "NOK",
+    "coordinates": [
+      59.2839,
+      11.1096
+    ]
+  },
+  "device": {
+    "id": "mobile",
+    "kind": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "$comment": "A real mobile identity WITHOUT a device descriptor — see `oslo-mobile.json` for the measurement. `isMobile` is the only descriptor option that costs viewport control (980 vs 390 on a page with no viewport meta tag), and it is the one not set here.",
+    "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36",
+    "hasTouch": true,
+    "deviceScaleFactor": 3
+  },
+  "visitorType": "anonymous"
+}

@@ -1,0 +1,20 @@
+# Tenant zero's keyword seeds — a worked example, not real data.
+#
+# This file is why the keyword capability is generic: the phrases, the
+# audiences and the per-term markets are all HERE, and nothing in src/ knows
+# a word of the tenant's language. Replace every term with your own before
+# running `farsyn keywords research` for real: each term x market costs one
+# real search credit.
+#
+# `intent` is a property of the QUERY and comes from a fixed vocabulary.
+# `audience` is the tenant's own segmentation, free text — the engine has no
+# opinion about it.
+terms:
+  - { term: "example widget rental", intent: local, audience: consumer }
+  - { term: "book a demo of example", intent: commercial, audience: business }
+  - { term: "example pricing", intent: commercial, audience: business }
+  - { term: "how does example work", intent: informational, audience: consumer }
+  - { term: "example", intent: navigational }
+  # A term that only matters in one market names its own rather than spending
+  # a credit everywhere.
+  - { term: "example vinterlokaler", intent: local, audience: consumer, markets: [oslo] }

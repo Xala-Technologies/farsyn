@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch makes the older run irrelevant. Cancelling it
+# keeps the queue honest; `main` is exempt so a merged commit always gets a
+# recorded result rather than being cancelled by the next merge.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# Default GITHUB_TOKEN permissions are read-write on some org settings; CI
+# never needs to write anything (no comment, no label, no push), so it asks
+# for the least it can get away with rather than inheriting whatever the
+# repo's default happens to be.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Generous because the Temporal tests download a dev server binary on first
+    # use and run real workflow executions against it (~20s locally, and two of
+    # them deliberately sit through a retry backoff).
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Reads the pinned version from package.json `packageManager`, so the
+      # runner cannot silently use a different pnpm than the lockfile was
+      # written with.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # `--frozen-lockfile` fails rather than silently resolving new versions,
+      # so a dependency cannot drift between a green local run and CI.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # NOT `agent-browser install`. Every test runs against an injected fake
+      # runtime, so the suite needs no Chrome — downloading 179MB per run to
+      # exercise nothing would be pure cost. The real browser is exercised by
+      # `farsyn experiment run`, which is deliberately a human/scheduled action
+      # against live sites, not a CI job.
+
+      - name: Typecheck
+        run: pnpm lint
+
+      # Its own step, deliberately, and before the tests: a layering violation
+      # is a different kind of news from a failing assertion. Buried inside a
+      # test run it reads as "something broke"; on its own it reads as "this
+      # import crossed a boundary the design rests on", with the reason printed
+      # next to it. Nothing here compiles or executes the tree, so it also fails
+      # in seconds rather than after the Temporal suite has downloaded a server.
+      - name: Boundaries
+        run: pnpm boundaries
+
+      # The gate that matters: 100% lines/statements/functions. Coverage proves
+      # lines RAN, not that anything was asserted — which is why the threshold
+      # is paired with the repo's rule that every fix is pinned by a test and
+      # the pin is mutation-checked. CI can enforce the first half only.
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      # apps/ui — the signed-in fetch seam. A blank page shipped while every
+      # server test passed; this is that module's own 100% gate.
+      - name: UI tests with coverage
+        run: pnpm test:ui
+
+      # apps/console — the process that starts the API and waits for /health.
+      # CI used to run `pnpm test:ui` under the title "Console tests" and never
+      # touched this package (audit 2026-08-18 §4).
+      - name: Console tests
+        run: pnpm test:console
+
+      # @farsyn/mcp — the stdio/HTTP surface an agent talks to. The root script
+      # already existed and CI never ran it, which is the same defect the
+      # console fix above closed for a different package.
+      - name: MCP tests
+        run: pnpm test:mcp
+
+      # Type-checks the console and builds it. A UI that does not compile is a server serving
+      # a stale bundle, which is how a fixed bug appears to still be there.
+      - name: Console build
+        run: pnpm ui:build
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,13 @@
+[Unit]
+Description=Farsyn fix agent, once daily
+
+# The exact hour is a placeholder — pick one that clears whatever else on this
+# host produces the findings this unit consumes, and that does not overlap
+# another LLM-heavy job sharing the same account: a repair and a crawl running
+# at once turns one rate limit into two failed agents instead of one slow one.
+[Timer]
+OnCalendar=*-*-* 09:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

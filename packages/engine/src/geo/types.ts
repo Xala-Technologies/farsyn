@@ -1,0 +1,186 @@
+/**
+ * Geography as a first-class dimension.
+ *
+ * The single most important shape here is that a "geo profile" has TWO
+ * independent axes, and they are verified separately:
+ *
+ *   network identity   — the IP the SERVER sees. Drives CDN edge selection,
+ *                        geo-redirects, currency, tax, latency.
+ *   browser environment — what the PAGE'S JAVASCRIPT believes. Drives
+ *                        `navigator.language`, `Intl` timezone, the
+ *                        Geolocation API, layout via viewport.
+ *
+ * Collapsing them into one number is the mistake this file exists to prevent.
+ * A run with Oslo coordinates arriving from a Frankfurt IP is a plausible
+ * production bug and a worthless QA profile, and only a two-axis verification
+ * can tell you which one you are looking at.
+ */
+
+/** A place we care about serving correctly. */
+export interface Market {
+  id: string;
+  /** ISO-3166 alpha-2, upper case. */
+  country: string;
+  city: string;
+  /** BCP-47, e.g. "nb-NO". */
+  language: string;
+  /** IANA zone, e.g. "Europe/Oslo". */
+  timezone: string;
+  currency: string;
+  /** [latitude, longitude] — fed to the Geolocation API. */
+  coordinates: [number, number];
+}
+
+export interface DeviceProfile {
+  id: string;
+  kind: "mobile" | "desktop";
+  viewport: { width: number; height: number };
+  /** agent-browser `set device` name, when one applies. */
+  emulate?: string;
+  userAgent?: string;
+  /**
+   * Touch support and pixel density, declared WITHOUT a device descriptor.
+   *
+   * These exist because the choice gaps C-8 framed — full emulation, or a hand-maintained user
+   * agent — turned out to be a false one. Playwright treats `isMobile`, `hasTouch`,
+   * `deviceScaleFactor` and `userAgent` as independent context options; only `isMobile`
+   * introduces the layout viewport that made emulation unacceptable, by handing
+   * `window.innerWidth` to the page's own markup.
+   *
+   * Measured against a page with no viewport meta tag:
+   *
+   * | context | innerWidth | touch | mobile UA |
+   * |---|---|---|---|
+   * | viewport only | 390 | 0 | no |
+   * | viewport + userAgent + hasTouch | **390** | 1 | yes |
+   * | full `Pixel 5` descriptor | **980** | 1 | yes |
+   *
+   * So a profile can present a mobile identity to UA and touch detection while
+   * `window.innerWidth` stays exactly what the profile declared — which is the engine's most
+   * safety-critical axis and the reason `emulate` was reverted from all eight mobile profiles.
+   */
+  hasTouch?: boolean;
+  deviceScaleFactor?: number;
+}
+
+export interface GeoProfile {
+  id: string;
+  label: string;
+  market: Market;
+  device: DeviceProfile;
+  visitorType: "anonymous" | "returning";
+}
+
+/** What the network says about where we are. Every field is nullable: an
+ *  unread value must never be confused with a read one. */
+export interface NetworkObservation {
+  ip: string | null;
+  country: string | null;
+  city: string | null;
+  region: string | null;
+  /** Provider/ASN string, e.g. "AS64500 EXAMPLE TELECOM AS". */
+  org: string | null;
+  /**
+   * Where the identity endpoint says this IP is, as [latitude, longitude].
+   *
+   * Stored because a city NAME cannot answer the question a city verdict is asked. Measured
+   * over 102 sessions: the endpoint returned Kista for a Stockholm request (12 km away) and
+   * Gällivare for another (1100 km away), and string comparison called both "unverified" — so
+   * the axis could not tell an adjacent suburb from the wrong end of the country. Coordinates
+   * can. `ipinfo` has always returned this as `loc`; it was parsed and thrown away.
+   */
+  coordinates: [number, number] | null;
+  timezone: string | null;
+  latencyMs: number | null;
+}
+
+/** What the page's own JavaScript says about where we are. */
+export interface BrowserObservation {
+  language: string | null;
+  languages: string[];
+  timezone: string | null;
+  userAgent: string | null;
+  viewport: { width: number; height: number } | null;
+  /**
+   * The Geolocation API result. `"denied"` is its own state and is the DEFAULT
+   * for a headless browser — measured in EXP-000: `set geo` stores coordinates
+   * but the page still gets "User denied Geolocation" unless permission is
+   * granted, which agent-browser 0.34.0 exposes no command for. Recording that
+   * honestly is the difference between a known limitation and a silent lie.
+   */
+  geolocation: { latitude: number; longitude: number } | "denied" | null;
+}
+
+export type AxisVerdict = "match" | "mismatch" | "unverified";
+
+export interface AxisResult {
+  verdict: AxisVerdict;
+  /** Why — always populated, including on a match. */
+  reasons: string[];
+}
+
+export interface GeoVerification {
+  profileId: string;
+  network: {
+    requested: { country: string; city: string };
+    observed: NetworkObservation;
+    country: AxisResult;
+    city: AxisResult;
+    /**
+     * Did the egress IP we opened with survive the whole run?
+     *
+     * A rotating proxy that changes exit mid-journey does not just look
+     * inauthentic — it makes the measurement incoherent, because LCP came from
+     * one visitor and CLS from another. This axis is `unverified` until the
+     * journey has finished, since it is a claim about a window of time rather
+     * than about a moment.
+     */
+    egressHeld: AxisResult;
+    /**
+     * A SECOND, independent IP-geo database's reading of the same IP, or null
+     * when nothing corroborated.
+     *
+     * Kept alongside the primary rather than merged into it. When two sources
+     * disagree the reader is left holding "which of these is wrong", and a report
+     * that shows one number cannot answer it.
+     */
+    corroborating: NetworkObservation | null;
+    /**
+     * Do the two sources agree about the country?
+     *
+     * Its own axis because it answers a different question from the others: not
+     * "are we where we asked to be" but "can that answer be believed". A Decodo
+     * ISP exit read as São Paulo by one database and New York by another, same IP
+     * — either reading alone is confident and coherent, and one is wrong.
+     * `unverified` until a second source has actually been read, because most
+     * commands do not pay for one.
+     */
+    agreement: AxisResult;
+  };
+  browser: {
+    requested: { language: string; timezone: string; viewport: { width: number; height: number } };
+    observed: BrowserObservation;
+    language: AxisResult;
+    timezone: AxisResult;
+    /**
+     * The device axis. Present because a profile ASKING for 390×844 and a
+     * browser actually rendering at 390×844 are different claims — the first
+     * live run rendered a mobile profile at 1280px and every other check still
+     * passed.
+     */
+    viewport: AxisResult;
+    /**
+     * Did the DECLARED device identity reach the page?
+     *
+     * `unverified` when the profile declares no `userAgent` — which is every profile
+     * in this repo today, deliberately. A claim nobody made cannot be verified, and
+     * inventing an expectation from `device.kind` would report a mismatch on every
+     * mobile profile. Only a proven mismatch costs the run its `trustworthy` flag.
+     */
+    device: AxisResult;
+  };
+  /** 0..100, capped by the weaker axis. See confidence/geo.ts. */
+  confidence: number;
+  /** True only when nothing is mismatched AND nothing is unverified. */
+  trustworthy: boolean;
+}

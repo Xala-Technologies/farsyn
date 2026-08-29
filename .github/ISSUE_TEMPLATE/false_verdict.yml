@@ -1,0 +1,106 @@
+name: False verdict
+description: Farsyn reported something about a site that turned out to be wrong (a false pass, a false fail, or a wrong geo verdict).
+labels: ["false-verdict"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project's whole claim is that a failing (or passing) run is
+        **reproducible**. That means the most useful bug report here is the
+        one that lets a maintainer reproduce your exact run — not a
+        description of what you saw on screen.
+
+        If you don't have some of the fields below, fill in what you can;
+        a report with a run id and nothing else is still far more useful
+        than nothing.
+
+  - type: textarea
+    id: what-was-wrong
+    attributes:
+      label: What did farsyn report, and what was actually true?
+      description: >-
+        e.g. "Reported currency-mismatch FAIL on the Oslo profile, but the
+        page shows NOK correctly when I check it manually."
+      placeholder: What verdict/finding was wrong, and what should it have been?
+    validations:
+      required: true
+
+  - type: input
+    id: run-id
+    attributes:
+      label: Run id
+      description: The `runId` from the run's JSON output or `farsyn runs list`.
+      placeholder: run_1786798894551_bergen-mobile
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence-manifest
+    attributes:
+      label: Evidence manifest
+      description: |
+        Paste the contents of `manifest.json` for this run, or the output of
+        `farsyn evidence inspect <runId> --json`. If the evidence directory
+        contains anything sensitive, redact it — but note where you redacted.
+      render: json
+    validations:
+      required: true
+
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Browser engine
+      options:
+        - agent-browser (default)
+        - playwright
+        - not sure
+    validations:
+      required: true
+
+  - type: input
+    id: profile
+    attributes:
+      label: Geo profile
+      description: e.g. `oslo-mobile`, or the market/device if you used `--country`/`--city`/`--device` directly.
+      placeholder: oslo-mobile
+    validations:
+      required: true
+
+  - type: input
+    id: journey
+    attributes:
+      label: Journey
+      placeholder: landing-page
+    validations:
+      required: true
+
+  - type: input
+    id: seed
+    attributes:
+      label: Seed
+      description: The `--seed` used, or the seed recorded in `run.json` if you didn't pass one explicitly. Journeys are seeded specifically so a run can be replayed exactly.
+      placeholder: "20260813"
+
+  - type: input
+    id: version
+    attributes:
+      label: farsyn / @farsyn/engine version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Exact command that produced this run
+      render: shell
+      placeholder: |
+        farsyn journey run --url https://example.com --geo oslo-mobile --journey landing-page --seed 20260813
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, a HAR excerpt, the target page's own behavior if you know it, etc.
