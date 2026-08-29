@@ -1,0 +1,17 @@
+[Unit]
+Description=Farsyn fix agent — reviews and PRs fixes for growth and farsyn findings
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/farsyn
+EnvironmentFile=/opt/farsyn/.env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/root
+# Five hours against a four-hour budget. The digest unit needs no timeout
+# because it runs for seconds; a oneshot inheriting the 90s default would be
+# SIGTERMed mid-clone, leaving a pushed branch with no pull request.
+TimeoutStartSec=18000
+# --tenant scopes the sweep to one customer; omit it to run untenanted.
+ExecStart=/usr/local/bin/pnpm farsyn fix run --timer

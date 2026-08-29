@@ -1,0 +1,13 @@
+[Unit]
+Description=Farsyn daily digest
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/farsyn
+EnvironmentFile=/opt/farsyn/.env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/root
+# --tenant is optional: omit it to send an untenanted digest across every
+# run in the evidence root, or set it here to scope to one customer.
+ExecStart=/usr/local/bin/pnpm farsyn digest send

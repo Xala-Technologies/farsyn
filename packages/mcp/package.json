@@ -1,0 +1,51 @@
+{
+  "name": "@farsyn/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MCP server — agents read farsyn runs, evidence, and catalog data over stdio or HTTP",
+  "license": "Apache-2.0",
+  "author": "Xala Technologies AS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xala-Technologies/farsyn.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/Xala-Technologies/farsyn/issues"
+  },
+  "homepage": "https://github.com/Xala-Technologies/farsyn#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "bin",
+    "src",
+    "NOTICE",
+    "!src/**/__tests__",
+    "!src/**/*.test.ts"
+  ],
+  "bin": {
+    "farsyn-mcp": "./bin/farsyn-mcp.mjs",
+    "farsyn-mcp-http": "./bin/farsyn-mcp-http.mjs"
+  },
+  "scripts": {
+    "prepack": "node -e \"require('fs').copyFileSync('../../LICENSE','LICENSE');require('fs').copyFileSync('../../NOTICE','NOTICE')\"",
+    "start": "tsx src/index.ts",
+    "start:http": "tsx src/http.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@farsyn/engine": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^5.2.1",
+    "tsx": "^4.23.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.16.5",
+    "typescript": "^7.0.2",
+    "vitest": "^2.1.9"
+  }
+}

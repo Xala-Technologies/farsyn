@@ -1,0 +1,66 @@
+name: Release
+
+# Runs on every push to main. changesets/action itself decides what to do:
+# open/update a "Version Packages" PR if unreleased changesets exist, or
+# (when that PR is what just got merged) bump versions, tag, and publish.
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # changesets/action pushes the version PR and creates the git tag.
+      contents: write
+      pull-requests: write
+      # npm provenance — ties the published tarball back to this exact
+      # workflow run and commit.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # The same gates as ci.yml, run again here rather than assumed from a
+      # prior green run: a merge to main can combine two individually-green
+      # PRs into a red tree, and this is the job with publish credentials.
+      - name: Lint
+        run: pnpm lint
+      - name: Boundaries
+        run: pnpm boundaries
+      - name: Test with coverage
+        run: pnpm test:coverage
+      - name: MCP tests
+        run: pnpm test:mcp
+
+      - name: Create release PR or publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

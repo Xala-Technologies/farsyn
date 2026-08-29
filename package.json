@@ -1,0 +1,59 @@
+{
+  "name": "farsyn",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "description": "Geographic experience & evidence engine — validates what a visitor in a given market actually experiences, and proves it.",
+  "type": "module",
+  "scripts": {
+    "farsyn": "pnpm --filter @farsyn/engine farsyn",
+    "worker": "pnpm --filter @farsyn/engine worker",
+    "typecheck": "pnpm --filter @farsyn/engine typecheck && pnpm --filter @farsyn/console typecheck && tsc --noEmit",
+    "lint": "pnpm typecheck",
+    "boundaries": "pnpm --filter @farsyn/engine boundaries",
+    "test": "pnpm --filter @farsyn/engine test && pnpm --filter @farsyn/console test",
+    "test:watch": "pnpm --filter @farsyn/engine test:watch",
+    "test:coverage": "pnpm --filter @farsyn/engine test:coverage",
+    "test:e2e": "pnpm --filter @farsyn/engine test:e2e",
+    "browser:install": "pnpm --filter @farsyn/engine browser:install",
+    "playwright:install": "pnpm --filter @farsyn/engine playwright:install",
+    "dev": "pnpm --filter @farsyn/console dev",
+    "ui:dev": "pnpm --filter farsyn-ui dev",
+    "ui:build": "pnpm --filter farsyn-ui build",
+    "test:ui": "pnpm --filter farsyn-ui test:coverage",
+    "test:console": "pnpm --filter @farsyn/console test",
+    "mcp": "pnpm --filter @farsyn/mcp start",
+    "mcp:http": "pnpm --filter @farsyn/mcp start:http",
+    "test:mcp": "pnpm --filter @farsyn/mcp test",
+    "changeset": "changeset"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.1",
+    "@temporalio/testing": "^1.21.1",
+    "@temporalio/worker": "^1.21.1",
+    "@types/node": "^22.16.5",
+    "typescript": "^7.0.2",
+    "vitest": "^2.1.9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "agent-browser",
+      "esbuild",
+      "protobufjs"
+    ]
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "Apache-2.0",
+  "author": "Xala Technologies AS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xala-Technologies/farsyn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Xala-Technologies/farsyn/issues"
+  },
+  "homepage": "https://github.com/Xala-Technologies/farsyn#readme"
+}

@@ -1,0 +1,83 @@
+import { describe, expect, it } from "vitest";
+import { addTarget, parseTargetUrl, removeTarget } from "../targets.js";
+
+describe("parseTargetUrl", () => {
+  it("accepts a bare host and fills https, because that is what an operator types", () => {
+    const out = parseTargetUrl("app.example.com");
+    if (!out.ok) throw new Error(out.errors.join());
+    expect(out.value.href).toBe("https://app.example.com");
+    expect(out.value.origin).toBe("https://app.example.com");
+  });
+
+  it("keeps a path, so a watch can hit a specific page rather than only an origin", () => {
+    const out = parseTargetUrl("https://example.com/priser");
+    if (!out.ok) throw new Error(out.errors.join());
+    expect(out.value.href).toBe("https://example.com/priser");
+    expect(out.value.origin).toBe("https://example.com");
+  });
+
+  it("REFUSES credentials in the URL — those belong in FARSYN_PROXY_*", () => {
+    const out = parseTargetUrl("https://user:pass@example.com");
+    expect(out.ok).toBe(false);
+    if (out.ok) throw new Error("expected refusal");
+    expect(out.errors[0]).toContain("credential");
+  });
+
+  it("refuses a scheme that is not http(s)", () => {
+    expect(parseTargetUrl("ftp://example.com").ok).toBe(false);
+    expect(parseTargetUrl("javascript:alert(1)").ok).toBe(false);
+  });
+
+  it("refuses empty input rather than turning it into https://", () => {
+    expect(parseTargetUrl("").ok).toBe(false);
+    expect(parseTargetUrl("   ").ok).toBe(false);
+  });
+
+  it("refuses a string the URL parser cannot read", () => {
+    expect(parseTargetUrl("http://[").ok).toBe(false);
+  });
+
+  it("skips a malformed entry already on the list rather than treating it as a match", () => {
+    const added = addTarget(["::::"], "https://other.example");
+    if (!added.ok) throw new Error(added.errors.join());
+    expect(added.value).toEqual(["::::", "https://other.example"]);
+    const removed = removeTarget(["::::", "https://other.example"], "https://other.example");
+    if (!removed.ok) throw new Error(removed.errors.join());
+    expect(removed.value).toEqual(["::::"]);
+  });
+});
+
+describe("addTarget / removeTarget", () => {
+  it("appends a new origin and refuses a duplicate of the same href", () => {
+    const added = addTarget(["https://example.com"], "https://app.example.com");
+    if (!added.ok) throw new Error(added.errors.join());
+    expect(added.value).toEqual(["https://example.com", "https://app.example.com"]);
+    expect(addTarget(added.value, "app.example.com").ok).toBe(false);
+  });
+
+  it("removes by href, including when the operator typed the bare host", () => {
+    const removed = removeTarget(["https://example.com", "https://other.example"], "other.example");
+    if (!removed.ok) throw new Error(removed.errors.join());
+    expect(removed.value).toEqual(["https://example.com"]);
+  });
+
+  it("names a removal that was not on the list, rather than succeeding as a no-op", () => {
+    const out = removeTarget(["https://example.com"], "https://other.example");
+    expect(out.ok).toBe(false);
+  });
+});
+
+describe("a target that will not parse is refused by BOTH mutators, unchanged", () => {
+  it("returns the parse failure rather than adding or removing something", () => {
+    // The list is what the watch will drive a real browser at. A URL that could
+    // not be parsed must not reach it under any spelling, and the caller gets
+    // the parser's own errors rather than a generic "no" — the operator typed
+    // it and needs to know which part was wrong.
+    const existing = ["https://example.com"];
+    const added = addTarget(existing, "http://user:pass@example.com");
+    expect(added.ok).toBe(false);
+    const removed = removeTarget(existing, "not a url at all\u0000");
+    expect(removed.ok).toBe(false);
+    expect(existing).toHaveLength(1);
+  });
+});

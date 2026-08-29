@@ -1,0 +1,38 @@
+{
+  "$comment": [
+    "Copy to farsyn.config.json (gitignored, local to your checkout). Every key below is READ — by src/config/load.ts — and an unknown key is REJECTED rather than ignored, so a typo cannot look like a setting that took. Omit the file entirely and every value here is the default.",
+    "Credentials never live here. Proxy credentials come from FARSYN_PROXY_<MARKET> env vars only (R-26), and any credential-shaped key in this file is refused by name with a message saying so.",
+    "DELIBERATELY NOT CONFIGURABLE, so they are absent rather than inert: `site` and `markets` — a geo profile embeds its own market and is self-contained by design (R-4), so an evidence package can answer 'what identity was this run?' from one artifact months later without also needing the config as it stood that day. `run.readOnly` — read-only is structural, not a setting: nothing in the codebase writes to Linear, Convex or any repo, and a `false` here would be a promise no code keeps. `run.concurrency` — execution is sequential, and one journey is one network session on purpose (a rotating exit takes LCP from one visitor and CLS from another). `browser.headless` — visibility is a per-invocation debugging choice (`--headed`), not a project fact.",
+    "Every value below is a project-level default. A CLI flag always wins over it: --provider, --evidence-root."
+  ],
+
+  "network": {
+    "$comment": "provider: direct | http-proxy. `direct` egresses from wherever this machine is — honest, and the only option until a vendor is procured; a direct run always carries a warning that its geographic claims are unproven. http-proxy reads FARSYN_PROXY_<MARKET> from the environment, never from this file. directFallback: when http-proxy is out of credit or otherwise unusable, run from this host's direct egress instead of refusing — every market shares one exit and geographic claims are unproven, never silent. cooldownMs: how long a provider is skipped after a run proves its egress WRONG — a verified-right run clears it immediately, because a store that only ever adds freezes a vendor that recovered. Kept in <evidence-root>/cooldowns.json, so --tenant scopes it: a tenant with its own proxy account neither inherits nor causes another tenant's freeze. 0 is refused — it writes a cooldown that has already expired, which the store cannot tell from a provider that never failed; 'do not pause after a failure' is a different design, not a number.",
+    "provider": "direct",
+    "directFallback": false,
+    "verifyEndpoint": "https://ipinfo.io/json",
+    "cooldownMs": 3600000
+  },
+
+  "browser": {
+    "$comment": "Wall-clock caps on one agent-browser command — the default engine; --engine playwright uses Playwright's own per-call timeouts and there is no idle equivalent to cap. There is no flag for these because they describe the host, not the run. The values shown are RAISED for a slow machine, not the defaults — omit a key and the engine's own default applies (browser/exec.ts), which is the only place those numbers live. 0 is refused: it disables the cap, and a run with no cap does not fail, it hangs.",
+    "commandTimeoutMs": 180000,
+    "idleTimeoutMs": 60000
+  },
+
+  "evidence": {
+    "$comment": "root is resolved relative to the repo root, exactly as --evidence-root is. A retention tier you name REPLACES the default list for that tier, so a tier can be widened or narrowed; tiers you omit keep their defaults (evidence/manifest.ts RETENTION). Tiers are asymmetric on purpose: a passing run keeps almost nothing because a trace per green run costs gigabytes to prove what nobody will read, and an ERROR run maps to `investigation` — that is the case where we know least and need most.",
+    "root": "var/evidence",
+    "retention": {
+      "pass": ["metadata", "screenshot", "vitals"],
+      "warning": ["metadata", "screenshot", "vitals", "console", "network"],
+      "fail": ["metadata", "screenshot", "vitals", "console", "network", "har", "trace", "snapshot"],
+      "investigation": ["metadata", "screenshot", "vitals", "console", "network", "har", "trace", "snapshot", "a11y"]
+    }
+  },
+
+  "paths": {
+    "$comment": "home redirects the WORKSPACE — tenants, a profiles/journeys overlay, var/evidence, var/secrets — without moving this file. Resolved relative to this config file's own directory, same rule as evidence.root. Omit it and the workspace is: --home, then FARSYN_HOME, then (only inside a farsyn git checkout) the checkout itself, then ~/.farsyn. A relative evidence.root above is still resolved against the WORKSPACE, not this setting, so setting home alone is enough to move both.",
+    "home": "."
+  }
+}

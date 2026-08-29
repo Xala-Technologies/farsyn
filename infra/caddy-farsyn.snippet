@@ -1,0 +1,14 @@
+# Merge into the Docker Caddyfile for farsyn.
+# UI + API on 4180; MCP Streamable HTTP on 4181 (see farsyn-mcp-bridge.service).
+
+your-host.example {
+	encode gzip
+
+	handle /mcp* {
+		reverse_proxy 172.16.1.1:4181
+	}
+
+	handle {
+		reverse_proxy 172.16.1.1:4180
+	}
+}

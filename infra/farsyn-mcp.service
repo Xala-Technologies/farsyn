@@ -1,0 +1,21 @@
+[Unit]
+Description=Farsyn MCP (Streamable HTTP)
+After=network.target farsyn.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/farsyn
+EnvironmentFile=/opt/farsyn/.env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/root
+Environment=FARSYN_REPO_ROOT=/opt/farsyn
+Environment=FARSYN_MCP_HOST=127.0.0.1
+Environment=FARSYN_MCP_PORT=4181
+Environment=FARSYN_SERVER_URL=https://your-host.example
+Environment=FARSYN_MCP_ALLOWED_HOSTS=your-host.example,127.0.0.1,localhost
+ExecStart=/usr/local/bin/pnpm --filter @farsyn/mcp start:http
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

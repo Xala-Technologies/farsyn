@@ -1,0 +1,35 @@
+name: Feature request
+description: Propose something farsyn doesn't do yet.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that farsyn doesn't support today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        If you have a specific shape in mind (a new CLI flag, a new check
+        kind, a new egress provider, …), describe it. Check `AGENTS.md`'s
+        wiring checklists first — a lot of extension points already exist
+        and might already cover this.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Including "do nothing" and "do it outside farsyn" — why isn't either good enough?
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked `docs/gaps.md` and this isn't already a known, tracked gap.
+        - label: I checked `AGENTS.md`'s wiring checklists and this genuinely needs a new extension point.
