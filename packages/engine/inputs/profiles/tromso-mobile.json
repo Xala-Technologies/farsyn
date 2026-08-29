@@ -1,0 +1,30 @@
+{
+  "$comment": "Northernmost market tested, 1700km from Oslo. The vantage most likely to expose a CDN edge that only serves the south well.",
+  "id": "tromso-mobile",
+  "label": "Tromso, mobile",
+  "market": {
+    "id": "tromso",
+    "country": "NO",
+    "city": "Tromso",
+    "language": "nb-NO",
+    "timezone": "Europe/Oslo",
+    "currency": "NOK",
+    "coordinates": [
+      69.6492,
+      18.9553
+    ]
+  },
+  "device": {
+    "id": "mobile",
+    "kind": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "$comment": "A real mobile identity WITHOUT a device descriptor — see `oslo-mobile.json` for the measurement. `isMobile` is the only descriptor option that costs viewport control (980 vs 390 on a page with no viewport meta tag), and it is the one not set here.",
+    "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36",
+    "hasTouch": true,
+    "deviceScaleFactor": 3
+  },
+  "visitorType": "anonymous"
+}

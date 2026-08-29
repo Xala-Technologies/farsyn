@@ -1,0 +1,25 @@
+# Every path defaults to the maintainer group. Paths listed after this one
+# narrow ownership further; the LAST matching pattern wins (CODEOWNERS
+# semantics), so the general rule stays first and specific seams stay below
+# it, not the other way round.
+*                                       @Xala-Technologies/farsyn-maintainers
+
+# The browser seam — invariant 1. Only agent-browser.ts and playwright.ts may
+# know their own engine exists, and a change here routinely touches both
+# adapters plus fake-runtime.ts; review benefits from someone who has read
+# invariant 1 recently.
+/packages/engine/src/browser/                     @Xala-Technologies/farsyn-maintainers
+
+# The layer map, enforced. A rule change here is a claim about the whole
+# dependency graph, and a mistyped pattern is a silent no-op (invariant 18).
+/packages/engine/.dependency-cruiser.mjs          @Xala-Technologies/farsyn-maintainers
+
+# Redaction-at-write and evidence retention/pruning — invariants 11, 20, 21,
+# 31, 32. This is the surface most directly responsible for what leaves the
+# machine running farsyn and lands in a package a human reads.
+/packages/engine/src/evidence/                    @Xala-Technologies/farsyn-maintainers
+
+# Licensing and attribution should not drift without deliberate review.
+/LICENSE                                          @Xala-Technologies/farsyn-maintainers
+/NOTICE                                            @Xala-Technologies/farsyn-maintainers
+

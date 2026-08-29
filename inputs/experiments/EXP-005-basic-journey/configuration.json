@@ -1,0 +1,12 @@
+{
+  "command": "farsyn experiment run EXP-005 --samples 5 --geo oslo-mobile --url https://example.com/blog",
+  "samples": 5,
+  "profile": "oslo-mobile",
+  "target": "https://example.com/blog",
+  "networkProvider": "direct",
+  "agentBrowser": "0.34.0",
+  "chrome": "151.0.7922.138 (mac-arm64)",
+  "host": "macOS arm64, egress via a residential ISP (Norway)",
+  "startedAt": "2026-08-12T11:59:53.065Z",
+  "finishedAt": "2026-08-12T12:01:04.932Z"
+}

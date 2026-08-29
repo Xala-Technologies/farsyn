@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "farsyn-local": {
+      "command": "pnpm",
+      "args": ["--filter", "@farsyn/mcp", "start"],
+      "env": {
+        "FARSYN_REPO_ROOT": "/path/to/farsyn",
+        "FARSYN_SERVER_URL": "https://farsyn.example.com",
+        "FARSYN_API_TOKEN": "${env:FARSYN_API_TOKEN}"
+      }
+    },
+    "farsyn-remote": {
+      "url": "https://farsyn.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:FARSYN_API_TOKEN}"
+      }
+    }
+  }
+}

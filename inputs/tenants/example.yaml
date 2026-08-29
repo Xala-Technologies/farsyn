@@ -1,0 +1,62 @@
+# A worked example, not a customer. Copy this file and rename it to onboard a
+# real tenant — everything specific to that business belongs HERE, never in
+# src/, which is the whole point of tenant files existing.
+#
+# This one targets example.com and a handful of Norwegian and Nordic markets,
+# because that is the market set this repo ships profiles for out of the box.
+# Point `targets` and `markets` at your own site and the markets you actually
+# serve; nothing in the engine cares what values you put here.
+id: example
+name: Example Inc.
+# Profile market ids, not free text. A run for a market this tenant never asked
+# about is refused, which matters once quota is real: a typo that sweeps 16
+# markets instead of 3 is a bill.
+markets: [oslo, bergen, stockholm, copenhagen]
+# An allowlist, and it is a security control rather than convenience. This engine
+# drives a real browser from residential IPs on a schedule; a target it was not
+# pointed at deliberately is either a mistake or somebody else's site.
+targets:
+  - https://example.com
+  - https://app.example.com
+# Host → GitHub repo. Site findings file here; instrumentation stays on
+# FARSYN_GITHUB_REPO.
+repositories:
+  - host: example.com
+    repo: example-org/example-marketing-site
+    base: main
+  - host: app.example.com
+    repo: example-org/example-app
+    base: main
+# growth-fleet writes `growth.agent_findings.target_repo` as a LOGICAL key, not a
+# host — `marketing`, `app`, `platform`. The host map above cannot answer a row
+# whose `site` column is a site id, so the fix agent needs both.
+growth:
+  repoKeys:
+    - key: marketing
+      repo: example-org/example-marketing-site
+      base: main
+    - key: app
+      repo: example-org/example-app
+      base: main
+  # Empty means every agent in the fleet. Name slugs here to narrow it.
+  agents: []
+# A human merges. See tenant/types.ts for why this is a decision and not a
+# placeholder, and AGENTS.md for what has to be true before it changes.
+fix:
+  automerge: false
+# The NAME of an environment variable, never a credential. Credentials come
+# from the environment only. null means "use the shared default".
+proxyCredentials: null
+# The NAME of the variable holding this tenant's proxy sub-account username, for
+# metering. Set FARSYN_SUBUSER_EXAMPLE to meter this tenant; until then its
+# traffic is UNMEASURABLE rather than unlimited, because the shared account's
+# figure describes every tenant on it.
+proxySubUser: FARSYN_SUBUSER_EXAMPLE
+quota:
+  # 4 markets x desktop x 1 journey = 4 cells x 4 sweeps/day = 16 runs/day.
+  # Traffic is roughly 1 MB x 16 x 30 days ~= 0.5 GB against a 10 GB account,
+  # leaving headroom for an on-demand "Run now". Size your own tenant's quota
+  # against your own pulse and account, not this one.
+  trafficMb: 10000
+  runsPerDay: 200
+retentionDays: 30

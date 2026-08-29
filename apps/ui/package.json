@@ -1,0 +1,37 @@
+{
+  "name": "farsyn-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "Xala Technologies AS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xala-Technologies/farsyn.git",
+    "directory": "apps/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/Xala-Technologies/farsyn/issues"
+  },
+  "homepage": "https://github.com/Xala-Technologies/farsyn#readme",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/coverage-v8": "^3.2.7",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.7"
+  }
+}

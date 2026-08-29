@@ -1,0 +1,15 @@
+{
+  "id": "login-reachable",
+  "title": "Login form is reachable",
+  "description": "Opens app.example.com/login, reveals the email form, and stops before a code is requested. Read-only. The full login is the `login` journey — this one only proves a visitor can see the field.\n\nOn the pulse via targetJourneys: every city hits the login page with this journey only. The writes OTP login is e2e, one cell.",
+  "writes": false,
+  "steps": [
+    { "action": "open", "url": "{target}", "label": "open the login page" },
+    { "action": "assert", "check": "selector-visible", "selector": "[data-testid=login-email-entry]", "severity": "critical", "label": "email login is offered" },
+    { "action": "click", "selector": "[data-testid=login-email-entry]", "label": "choose email login" },
+    { "action": "assert", "check": "selector-visible", "selector": "[data-testid=login-email-input]", "severity": "critical", "label": "the email field is there" },
+    { "action": "screenshot", "label": "login-form" },
+    { "action": "assert", "check": "no-http-5xx", "severity": "critical" },
+    { "action": "assert", "check": "no-page-errors", "severity": "high" }
+  ]
+}
