@@ -65,6 +65,6 @@
     "agent-browser": "0.34.0",
     "dependency-cruiser": "^18.2.0",
     "typescript": "^7.0.2",
-    "vitest": "^2.1.9"
+    "vitest": "^3.2.6"
   }
 }
