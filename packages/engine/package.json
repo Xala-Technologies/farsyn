@@ -1,6 +1,6 @@
 {
   "name": "@farsyn/engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Geographic experience & evidence engine — drives a real browser against live sites to prove what a visitor in a given market actually experiences.",
   "type": "module",
   "license": "Apache-2.0",
