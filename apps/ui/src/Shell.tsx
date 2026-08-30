@@ -1,13 +1,12 @@
 import type { JSX, ReactNode } from "react";
 import { LiveDots, NAV_ICONS } from "./icons.tsx";
-import { Mark } from "./Logo.tsx";
+import { Mark, Wordmark } from "./Logo.tsx";
 import type { NavSection } from "./nav.ts";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
 export type ShellStat = { k: string; v: string };
 
 type ShellProps = {
-  title: string;
   hint: string;
   paneTitle: string;
   paneHint: string;
@@ -22,7 +21,6 @@ type ShellProps = {
 };
 
 export function Shell({
-  title,
   hint,
   paneTitle,
   paneHint,
@@ -44,11 +42,13 @@ export function Shell({
             <Mark size={18} />
           </span>
           <div className="min-w-0">
-            <p className="sidebar-title">{title}</p>
+            <p className="sidebar-title logo-name">
+              <Wordmark />
+            </p>
             <p className="sidebar-hint">{hint}</p>
           </div>
         </header>
-        <nav className="sidebar-nav scrollbar-thin" aria-label="farsyn">
+        <nav className="sidebar-nav scrollbar-thin" aria-label="Farsyn">
           {sections.map((section) => (
             <div className="nav-section" key={section.id}>
               <p className="nav-section-k">{section.label}</p>

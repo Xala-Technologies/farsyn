@@ -74,12 +74,12 @@ export function App(): JSX.Element {
       route.findingKey !== undefined && view !== null ? view.tickets.find((row) => row.key === route.findingKey) : undefined;
     document.title =
       ticket !== undefined
-        ? `farsyn — ${ticket.title}`
+        ? `Farsyn — ${ticket.title}`
         : route.pageTarget !== undefined
-          ? `farsyn — ${pageLabel(route.pageTarget)}`
+          ? `Farsyn — ${pageLabel(route.pageTarget)}`
           : route.runId
-            ? `farsyn — run ${route.runId}`
-            : `farsyn — ${viewMeta(route.view)?.label.toLowerCase() ?? "runs"}`;
+            ? `Farsyn — run ${route.runId}`
+            : `Farsyn — ${viewMeta(route.view)?.label.toLowerCase() ?? "runs"}`;
   }, [route, view]);
 
   /**
@@ -233,7 +233,6 @@ export function App(): JSX.Element {
 
   return (
     <Shell
-      title="farsyn"
       hint={liveCount ? `${liveCount} waking` : `${view.summary.total} visits`}
       paneTitle={
         run !== undefined
@@ -244,7 +243,7 @@ export function App(): JSX.Element {
               ? pageLabel(route.pageTarget)
               : route.liveId !== undefined
                 ? "Now"
-                : (current?.label ?? "farsyn")
+                : (current?.label ?? "Farsyn")
       }
       paneHint={
         run !== undefined

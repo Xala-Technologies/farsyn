@@ -1,9 +1,5 @@
 # Operator-controlled watch. The console writes this file; do not put credentials here.
 # Markets must be ones the tenant listed. A writes journey needs allowWrites: true.
-#
-# Shipped disabled: this is a worked example for the `example` tenant, not a
-# schedule anyone should actually run. Flip `enabled: true` once you have
-# pointed `targets` at a real site and set up egress for it.
 tenantId: example
 enabled: false
 mode: periodic
@@ -19,11 +15,7 @@ journeys:
   - browse
   - search
 targets:
-  - https://example.com
-  - https://app.example.com/login
-targetJourneys:
-  https://app.example.com/login:
-    - login-reachable
+  - https://xala.no
 maxConcurrent: 2
 allowWrites: false
 journeyPick: seeded
@@ -34,3 +26,4 @@ e2e:
       device: desktop
       journey: login
       url: https://app.example.com/login
+targetJourneys: {}

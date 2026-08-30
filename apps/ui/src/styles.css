@@ -1562,6 +1562,19 @@ tr.geo-split td {
   color: var(--fg-on-accent);
 }
 
+/*
+ * `.btn:disabled` sets `color: var(--fg-muted)` for the plain (neutral-surface) button, where
+ * it reads correctly. That selector's specificity (a class + a pseudo-class) beats
+ * `.btn-primary`'s single class, so without this rule a disabled PRIMARY button silently lost
+ * its on-accent text colour to the muted one — muted graphite/ink was never tuned for contrast
+ * against the accent fill, and the label became close to unreadable. Dim the whole button via
+ * opacity instead, which is what "disabled" should mean, and keep the accent-aware text colour.
+ */
+.btn-primary:disabled {
+  color: var(--fg-on-accent);
+  opacity: 0.45;
+}
+
 .btn-quiet {
   padding: 0.4rem 0.75rem;
   font-family: var(--font-mono);
