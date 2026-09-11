@@ -33,7 +33,7 @@
     "@temporalio/worker": "^1.21.1",
     "@types/node": "^22.16.5",
     "typescript": "^7.0.2",
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.11"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
