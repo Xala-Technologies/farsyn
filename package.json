@@ -28,12 +28,12 @@
     "changeset": "changeset"
   },
   "devDependencies": {
-    "@changesets/cli": "^3.0.1",
-    "@temporalio/testing": "^1.21.1",
-    "@temporalio/worker": "^1.21.1",
-    "@types/node": "^22.16.5",
+    "@changesets/cli": "^3.0.3",
+    "@temporalio/testing": "^1.24.0",
+    "@temporalio/worker": "^1.24.0",
+    "@types/node": "^26.6.1",
     "typescript": "^7.0.2",
-    "vitest": "^3.2.7"
+    "vitest": "^5.0.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
