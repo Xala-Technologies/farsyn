@@ -69,7 +69,7 @@ jobs:
       # that visibly does not run.
       - name: Create release PR or publish
         if: ${{ env.HAS_NPM_TOKEN == 'true' }}
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
           publish: pnpm changeset publish
           title: "chore: version packages"
